@@ -124,7 +124,7 @@ p{{line-height:1.5;font-size:14px;color:#4b5a6a}}.err{{color:#a91520;font-weight
 {message}<form action="/authorize" method="post"><input type="hidden" name="ctx" value="{ctx_html}">
 <label for="access">Owner access code</label><input id="access" name="access" type="password" autocomplete="off" required minlength="32" autofocus>
 <button type="submit">Authorize ChatGPT</button></form><p>The code stays between your browser and this Render service. It is not sent to ChatGPT.</p></main></body></html>"""
-    return HTMLResponse(page, headers={"Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer"})
+    return HTMLResponse(page, headers={"Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self' https://chatgpt.com; base-uri 'none'; frame-ancestors 'none'", "X-Frame-Options": "DENY", "Referrer-Policy": "no-referrer"})
 
 
 def auth_context(q: dict[str, str]) -> dict[str, Any]:
