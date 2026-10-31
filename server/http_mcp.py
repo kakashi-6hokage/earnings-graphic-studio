@@ -31,9 +31,6 @@ def health():
 
 @app.post('/mcp')
 async def mcp(request: Request, authorization: str | None = Header(default=None)):
-    if not validate_access_token(authorization):
-        raise HTTPException(status_code=401, detail='OAuth authentication required',
-                            headers={'WWW-Authenticate':f'Bearer resource_metadata="{OAUTH_BASE}/.well-known/oauth-protected-resource", scope="earnings:render"'})
     if int(request.headers.get('content-length', '0') or '0') > 2500000:
         raise HTTPException(status_code=413,detail='Request too large')
     data=await request.json()
@@ -52,7 +49,23 @@ async def mcp(request: Request, authorization: str | None = Header(default=None)
     if method=='initialize':
         return response({'protocolVersion':PROTOCOL,'capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'earnings-graphic-studio','version':'0.2.0'}})
     if method=='ping':return response({})
-    if method=='tools/list':return response({'tools':TOOLS})
+    if method=='tools/list':
+        # Tool metadata is safe to discover anonymously. Per-tool securitySchemes
+        # are required by ChatGPT to display the OAuth connection flow.
+        public_tools=[{**tool,'securitySchemes':[{'type':'oauth2','scopes':['earnings:render']}]} for tool in TOOLS]
+        return response({'tools':public_tools})
+    if method=='tools/call' and not validate_access_token(authorization):
+        # MCP tool-level challenge, in addition to the OAuth discovery endpoints.
+        # OpenAI requires both error and error_description in the challenge.
+        challenge=(f'Bearer resource_metadata="{OAUTH_BASE}/.well-known/oauth-protected-resource", '
+                   'error="invalid_token", error_description="Connect Earnings Graphic Studio to continue"')
+        return response({'content':[{'type':'text','text':'OAuth authorization required to use this tool.'}],
+                         'isError':True,'_meta':{'mcp/www_authenticate':[challenge]}})
+    if not validate_access_token(authorization):
+        challenge=(f'Bearer resource_metadata="{OAUTH_BASE}/.well-known/oauth-protected-resource", '
+                   'error="invalid_token", error_description="Connect Earnings Graphic Studio to continue"')
+        raise HTTPException(status_code=401,detail='OAuth authentication required',
+                            headers={'WWW-Authenticate':challenge})
     if method=='tools/call':
         name=params.get('name'); args=params.get('arguments') or {}
         if name=='get_earnings_template':
