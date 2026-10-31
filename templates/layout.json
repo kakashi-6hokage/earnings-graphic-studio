@@ -1,0 +1,9 @@
+{
+ "template":"amazon_editorial_v1",
+ "canvas":{"width":2400,"height":1350,"background":"#F5F5F3"},
+ "fonts":{"family":"DejaVu Sans, Arial, Helvetica, sans-serif","title":58,"primary_amount":47,"source_label":26,"source_amount":30,"support":18},
+ "colors":{"navy":"#254568","muted":"#60656B","blue":"#4A76E9","orange":"#E7A82E","green":"#3B9536","red":"#B73123","ribbon_blue":"#A9BDEB","ribbon_gold":"#EDD29A","ribbon_green":"#A7C99B","ribbon_red":"#D69A91"},
+ "x_positions":{"source":400,"revenue":850,"gross":1275,"operating":1650,"pretax":1875,"right":2190,"expense_end":2035},
+ "editable":true,
+ "notes":"Editorial spacing and visual hierarchy are deterministic. Node heights and ribbon widths scale from full precision ledger amounts. Typography and labels remain editable in the exported SVG."
+}

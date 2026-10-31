@@ -1,0 +1,28 @@
+{
+  "company":"Amazon", "quarter":"Q3 2026", "headline":"AWS growth lifts operating margins", "release_date":"2026-10-29",
+  "currency":"$", "units":"B", "source_note":"Layout demonstration — illustrative rounded values; not a verified financial statement",
+  "revenue":201.94,"revenue_yoy":12,
+  "sources":[
+    {"name":"Online stores","amount":68.47,"yoy":2,"color":"blue","mark":"SHOP"},
+    {"name":"Third-party sellers","amount":46.49,"yoy":9,"color":"blue","mark":"3P"},
+    {"name":"AWS","amount":45.98,"yoy":39,"color":"gold","mark":"aws"},
+    {"name":"Advertising","amount":19.64,"yoy":11,"color":"gold","mark":"ADS"},
+    {"name":"Subscriptions","amount":14.01,"yoy":11,"color":"blue","mark":"prime"},
+    {"name":"Physical stores","amount":5.71,"yoy":2,"color":"blue","mark":"STORE"},
+    {"name":"Other","amount":1.64,"yoy":16,"color":"blue","mark":"..."}
+  ],
+  "cost_of_revenue":94.57,
+  "operating_expenses":[
+    {"name":"Fulfillment","amount":30.00},
+    {"name":"Technology & infrastructure","amount":34.81},
+    {"name":"Sales & marketing","amount":11.65},
+    {"name":"General & administrative","amount":2.70},
+    {"name":"Other operating","amount":0.13}
+  ],
+  "gross_profit":107.37,
+  "operating_profit":28.08,
+  "nonoperating_net":-1.21,
+  "pretax_income":26.87,
+  "income_tax":6.18,
+  "net_income":20.69
+}

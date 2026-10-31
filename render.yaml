@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: earnings-graphic-studio
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: MCP_BEARER_TOKEN
+        generateValue: true

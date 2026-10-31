@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends libcairo2 libffi8 && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY renderer ./renderer
+COPY server ./server
+COPY templates ./templates
+EXPOSE 10000
+CMD ["sh", "-c", "exec uvicorn server.http_mcp:app --host 0.0.0.0 --port ${PORT:-10000}"]
