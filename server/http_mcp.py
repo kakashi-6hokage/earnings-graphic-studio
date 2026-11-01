@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT))
 from renderer.engine import validate, write_outputs, STYLE
 from server.oauth import router as oauth_router, validate_access_token, BASE as OAUTH_BASE
 from server.mcp_server import TOOLS, PROTOCOL
+from server.finviz_api import FINVIZ_TOOLS, execute_finviz, FinvizError
 
 app = FastAPI(title="Earnings Graphic Studio MCP", docs_url=None, redoc_url=None)
 app.include_router(oauth_router)
@@ -47,12 +48,12 @@ async def mcp(request: Request, authorization: str | None = Header(default=None)
             result.append({'type':'image','mimeType':'image/png','data':base64.b64encode(Path(png).read_bytes()).decode('ascii')})
         return {'content':result,'isError':error}
     if method=='initialize':
-        return response({'protocolVersion':PROTOCOL,'capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'earnings-graphic-studio','version':'0.2.0'}})
+        return response({'protocolVersion':PROTOCOL,'capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'earnings-graphic-studio','version':'0.3.0'}})
     if method=='ping':return response({})
     if method=='tools/list':
         # Tool metadata is safe to discover anonymously. Per-tool securitySchemes
         # are required by ChatGPT to display the OAuth connection flow.
-        public_tools=[{**tool,'securitySchemes':[{'type':'oauth2','scopes':['earnings:render']}]} for tool in TOOLS]
+        public_tools=[{**tool,'securitySchemes':[{'type':'oauth2','scopes':['earnings:render']}]} for tool in (TOOLS + FINVIZ_TOOLS)]
         return response({'tools':public_tools})
     if method=='tools/call' and not validate_access_token(authorization):
         # MCP tool-level challenge, in addition to the OAuth discovery endpoints.
@@ -68,6 +69,13 @@ async def mcp(request: Request, authorization: str | None = Header(default=None)
                             headers={'WWW-Authenticate':challenge})
     if method=='tools/call':
         name=params.get('name'); args=params.get('arguments') or {}
+        if name in {tool['name'] for tool in FINVIZ_TOOLS}:
+            try:
+                return response(content(execute_finviz(name,args)))
+            except FinvizError as exc:
+                # Only sanitized domain-specific errors reach the model. No URLs
+                # containing auth tokens, and never expose the environment value.
+                return response(content({'error':str(exc)},True))
         if name=='get_earnings_template':
             return response(content({'template':STYLE['template'],'canvas':STYLE['canvas'],'positions':STYLE['x_positions'],'requires_verified_ledger':True,'source_data_fetched':False,'independent_visual_review':False,'deployment':'Hosted HTTP'}))
         if name in ('validate_earnings_ledger','render_earnings_sankey'):
