@@ -8,6 +8,8 @@ import base64
 import hmac
 import json
 import os
+import logging
+import threading
 import re
 import sys
 import tempfile
@@ -25,6 +27,26 @@ from server.finviz_api import FINVIZ_TOOLS, execute_finviz, FinvizError
 
 app = FastAPI(title="Earnings Graphic Studio MCP", docs_url=None, redoc_url=None)
 app.include_router(oauth_router)
+
+
+def _finviz_startup_check():
+    """Read-only one-request smoke test without exposing secrets in logs."""
+    log = logging.getLogger("uvicorn.error")
+    if not os.getenv("FINVIZ_API_TOKEN", "").strip():
+        log.warning("FINVIZ_API_SMOKETEST result=not_configured")
+        return
+    try:
+        data = execute_finviz("get_finviz_statements", {"ticker":"MSFT", "statement":"IQ"})
+        log.info("FINVIZ_API_SMOKETEST result=success ticker=MSFT columns=%d rows=%d",
+                 len(data.get("columns",[])), data.get("row_count",-1))
+    except FinvizError as e:
+        log.warning("FINVIZ_API_SMOKETEST result=failed reason=%s",str(e))
+    except Exception as e:
+        log.error("FINVIZ_API_SMOKETEST result=failed unexpected_type=%s",type(e).__name__)
+
+@app.on_event("startup")
+def _start_finviz_smoketest():
+    threading.Thread(target=_finviz_startup_check,daemon=True).start()
 
 @app.get('/health')
 def health():
